@@ -1,0 +1,8 @@
+.venv/
+.venv
+.venvk
+.venv/
+
+/app/Chatbot_M3/.venv/
+/app/Chatbot_M3/proxy-cert.pem
+.venv/

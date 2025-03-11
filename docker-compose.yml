@@ -1,0 +1,24 @@
+version: '3.9'
+services:
+  chatbot_m3:
+    build: .
+    container_name: ChatbotM3Container
+    ports:
+      - '8501:8501'
+    volumes:
+      - ./M3_db/db_M3_bydoc:/Chatbot_M3/M3_db/db_M3_bydoc
+      - ./Models/multilingual-e5-large:/Chatbot_M3/Models/multilingual-e5-large
+      - ./Models/Mistral-7B-Instruct-v0.2-AWQ:/Chatbot_M3/Models/Mistral-7B-Instruct-v0.2-AWQ
+      - ./Models/translation_model:/Chatbot_M3/Models/translation_model
+    network_mode: "host"
+    depends_on:
+      - vector_db
+      - text_to_vec_model
+      - llm_model
+      - translate_model
+
+volumes:
+  vector_db:
+  text_to_vec_model:
+  llm_model:
+  translate_model:
