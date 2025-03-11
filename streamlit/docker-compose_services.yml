@@ -1,0 +1,59 @@
+# Docker Compose file to orchestrate the microservices
+version: '3.8'
+
+services:
+  chromadb:
+    image: chromadb/chromadb:latest
+    container_name: chromadb
+    volumes:
+      - ./db_M3:/data
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMADB_PATH=/data
+
+  embedding_service:
+    build: ./embedding_service
+    container_name: embedding_service
+    depends_on:
+      - chromadb
+    ports:
+      - "5001:5001"
+    environment:
+      - CHROMADB_URL=http://chromadb:8000
+      - EMBEDDING_MODEL_PATH=/models/multilingual-e5-large
+    volumes:
+      - ./multilingual-e5-large:/models/multilingual-e5-large
+
+  llm_service:
+    build: ./llm_service
+    container_name: llm_service
+    depends_on:
+      - embedding_service
+    ports:
+      - "5002:5002"
+    environment:
+      - EMBEDDING_SERVICE_URL=http://embedding_service:5001
+      - LLM_MODEL_PATH=/models/Mistral-7B_instruct
+    volumes:
+      - ./Mistral-7B_instruct:/models/Mistral-7B_instruct
+
+  prompt_handler:
+    build: ./prompt_handler
+    container_name: prompt_handler
+    depends_on:
+      - llm_service
+    ports:
+      - "5003:5003"
+    environment:
+      - LLM_SERVICE_URL=http://llm_service:5002
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    depends_on:
+      - prompt_handler
+    ports:
+      - "8501:8501"
+    environment:
+      - PROMPT_HANDLER_URL=http://prompt_handler:5003
